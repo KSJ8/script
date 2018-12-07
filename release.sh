@@ -52,6 +52,13 @@ build/tools/releasetools/sign_target_files_apks -o -d "$KEY_DIR" "${VERITY_SWITC
 if [[ $DEVICE != hikey* ]]; then
   build/tools/releasetools/ota_from_target_files --block -k "$KEY_DIR/releasekey" "${EXTRA_OTA[@]}" $OUT/$TARGET_FILES \
     $OUT/$DEVICE-ota_update-$BUILD.zip || exit 1
+  cd $OUT
+  unzip $DEVICE-ota_update-$BUILD.zip META-INF/* care_map.txt payload_properties.txt
+  zip -r $DEVICE-ota_metadata_unsigned-$BUILD.zip META-INF/ care_map.txt payload_properties.txt
+  rm -rf META-INF care_map.txt payload_properties.txt
+  cd ../..
+  build/tools/releasetools/ota_metadata "$KEY_DIR/releasekey" $OUT/$DEVICE-ota_metadata_unsigned-$BUILD.zip $OUT/$DEVICE-ota_metadata-$BUILD.zip
+  rm -rf $OUT/$DEVICE-ota_metadata_unsigned-$BUILD.zip
 fi
 
 build/tools/releasetools/img_from_target_files $OUT/$TARGET_FILES \
